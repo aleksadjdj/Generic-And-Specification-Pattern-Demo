@@ -34,10 +34,10 @@ abstract class BaseSpecification<T> : ISpecification<T> where T : BaseEntity
         => Includes.Add(includeExpression);
 }
 
-class GetProductByIdSpecification : BaseSpecification<Product>
+class GetProductSpecification : BaseSpecification<Product>
 {
-    public GetProductByIdSpecification() { }
-    public GetProductByIdSpecification(int id) : base(x => x.Id == id) { }
+    public GetProductSpecification() { }
+    public GetProductSpecification(int id) : base(x => x.Id == id) { }
 }
 
 
@@ -102,13 +102,13 @@ class Program
 
         var genericRepository = new GenericRepository<Product>(productList);
 
-        var spec = new GetProductByIdSpecification(2);
+        var spec = new GetProductSpecification(2);
         var product = genericRepository.GetById(spec);
         Console.WriteLine($"Single element:{product.Name}");
         
         Console.WriteLine();
 
-        var spec2 = new GetProductByIdSpecification();
+        var spec2 = new GetProductSpecification();
         var products = genericRepository.ListAll(spec2);
         foreach (var p in products)
             Console.WriteLine($"{p.Id}.{p.Name}");
