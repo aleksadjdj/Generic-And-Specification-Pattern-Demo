@@ -93,14 +93,14 @@ class Program
 {   
     static void Main() 
     {
-        var productList = new List<Product>()
+        var productData = new List<Product>()
         {
             new Product{ Id = 1, Name = "one" },
             new Product{ Id = 2, Name = "two" },
             new Product{ Id = 3, Name = "three" },
         };
 
-        var genericRepository = new GenericRepository<Product>(productList);
+        var genericRepository = new GenericRepository<Product>(productData);
 
         var spec = new GetProductSpecification(2);
         var product = genericRepository.GetById(spec);
