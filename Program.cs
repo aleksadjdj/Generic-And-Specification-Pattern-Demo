@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-class BaseEntity
+abstract class BaseEntity
 {
     public int Id { get; set; }
 }
@@ -15,14 +15,14 @@ class Product : BaseEntity
 
 interface ISpecification<T>
 {
-    Expression<Func<T, bool>> Criteria { get;  }
+    Expression<Func<T, bool>> Criteria { get; }
     List<Expression<Func<T, object>>> Includes { get; }
 }
 
 abstract class BaseSpecification<T> : ISpecification<T> where T : BaseEntity
 {
     public Expression<Func<T, bool>> Criteria { get; }
-    public List<Expression<Func<T, object>>> Includes { get; } 
+    public List<Expression<Func<T, object>>> Includes { get; }
         = new List<Expression<Func<T, object>>>();
 
     public BaseSpecification() { }
@@ -40,7 +40,6 @@ class GetProductSpecification : BaseSpecification<Product>
     public GetProductSpecification(int id) : base(x => x.Id == id) { }
 }
 
-
 class SpecificationEvaluator<T>
 {
     public static IQueryable<T> GetQuery(IQueryable<T> inputQuery, ISpecification<T> spec)
@@ -52,7 +51,7 @@ class SpecificationEvaluator<T>
 
         // relations
         // query = spec.Includes.Aggregate(query, (current, include) 
-            // => current.Include(include));
+        // => current.Include(include));
 
         return query;
     }
@@ -66,12 +65,10 @@ interface IGenericRepository<T>
 
 class GenericRepository<T> : IGenericRepository<T>
 {
-    private readonly List<T> list;
+    private readonly List<T> _context;
 
-    public GenericRepository(List<T> list)
-    {
-        this.list = list;
-    }
+    public GenericRepository(List<T> context)
+       => _context = context;
 
     public T GetById(ISpecification<T> spec)
     {
@@ -85,19 +82,19 @@ class GenericRepository<T> : IGenericRepository<T>
 
     private IQueryable<T> ApplySpecification(ISpecification<T> spec)
     {
-        return SpecificationEvaluator<T>.GetQuery(list.AsQueryable(), spec);
+        return SpecificationEvaluator<T>.GetQuery(_context.AsQueryable(), spec);
     }
 }
 
-class Program 
-{   
-    static void Main() 
+class Program
+{
+    static void Main()
     {
         var productData = new List<Product>()
         {
-            new Product{ Id = 1, Name = "one" },
-            new Product{ Id = 2, Name = "two" },
-            new Product{ Id = 3, Name = "three" },
+            new Product { Id = 1, Name = "one" },
+            new Product { Id = 2, Name = "two" },
+            new Product { Id = 3, Name = "three" },
         };
 
         var genericRepository = new GenericRepository<Product>(productData);
@@ -105,12 +102,12 @@ class Program
         var spec = new GetProductSpecification(2);
         var product = genericRepository.GetById(spec);
         Console.WriteLine($"Single element:{product.Name}");
-        
+
         Console.WriteLine();
 
         var spec2 = new GetProductSpecification();
         var products = genericRepository.ListAll(spec2);
         foreach (var p in products)
             Console.WriteLine($"{p.Id}.{p.Name}");
-    } 
+    }
 }
